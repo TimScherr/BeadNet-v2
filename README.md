@@ -65,9 +65,7 @@ Users can specify to which subset selected crops can be assigned (only relevant 
 
 Crops can be selected by clicking on the corresponding image or using shortcuts (1: first image, 2: second image, 3: third image, space: select/next).
 
-After the crop creation, OMERO.web can be opened and the crops can be annotated:
-
-![](doc/annotation.mp4)
+After the crop creation, OMERO.web can be opened and the crops can be annotated (![video](doc/annotation.mp4)).
 
 ### Training Data Import and Export
 Annotated training data can be imported using the *Import* button. Thereby, it can be specified if the images will be min-max normalized or keep their normalization and to which training data subset they are added (train, val, test). The imported data will be upsampled according to the selected diameter range but it is also possible to keep the initial resolution. The training data will be cropped and uploaded to OMERO into the selected training set.
