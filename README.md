@@ -1,6 +1,6 @@
 # ![](doc/logo.png)
 
-BeadNet v2 is a deep learning-based tool for particle detection, e.g., fluorescent latex beads. The workflow covers training data creation, model training, model evaluation, and the application of trained models. OMERO is used for a comprehensive data management. So far, 2D and 2D+t data are supported. For 3D data, maximum intensity projects are used.
+BeadNet v2 is a deep learning-based tool for particle detection, e.g., fluorescent latex beads. The workflow covers training data creation, model training, model evaluation, and the application of trained models. OMERO is used for a comprehensive data management. So far, 2D and 2D+t data are supported. For 3D data, maximum intensity projections are used.
 
 ![](doc/example.png)
 
