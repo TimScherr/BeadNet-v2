@@ -264,6 +264,9 @@ class InferWorker(QObject):
                 # Predict crop
                 prediction, counts, centroids = self.inference(img, min_val=img_min, max_val=img_max, pads=pads)
 
+                if counts == 0:
+                    continue
+
                 # Append results
                 count_dict['frame'].append(frame)
                 count_dict['counts'].append(counts)
@@ -403,7 +406,7 @@ class InferWorker(QObject):
         try:
             prediction_batch = self.net(img_batch)
         except RuntimeError:
-            prediction = np.zeros_like(img, dtype=np.uint16)[pads[0]:, pads[1]:]
+            prediction = (np.zeros_like(img, dtype=np.uint16)[pads[0]:, pads[1]:], 0, [])
             self.text_output.emit('RuntimeError during inference (maybe not enough ram/vram?)')
         else:
             prediction_batch = torch.sigmoid(prediction_batch)
