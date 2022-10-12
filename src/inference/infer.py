@@ -299,7 +299,7 @@ class InferWorker(QObject):
                                 mask_point_roi.y = rdouble(centroid[0])
                                 mask_point_roi.theZ = rint(0)  # append mip-prediction always to first slice
                                 mask_point_roi.theC = rint(self.channel)
-                                mask_point_roi.theT = rint(0)
+                                mask_point_roi.theT = rint(frame)
                                 mask_point_roi.strokeColor = rint(
                                     int.from_bytes([255, 255, 0, 255], byteorder='big', signed=True))
                                 mask_point_roi_list.append(mask_point_roi)
