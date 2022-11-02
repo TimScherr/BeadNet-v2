@@ -189,7 +189,7 @@ class DataImportWorker(QObject):
                         mask_crop = mask[y_start:y_start + crop_size, x_start:x_start + crop_size]
 
                         # avoid empty crops
-                        num_cells_crop = len(utils.get_nucleus_ids(mask_crop))
+                        num_cells_crop = len(utils.get_particle_ids(mask_crop))
                         if num_cells_crop == 0:
                             continue
                         img_list.append([np.copy(img_crop),
