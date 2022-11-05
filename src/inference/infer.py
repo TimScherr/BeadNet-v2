@@ -29,7 +29,8 @@ class InferWorker(QObject):
     stop_inference = False
 
     def __init__(self, img_id_list, inference_path, scale_factor, omero_username, omero_password, omero_host,
-                 omero_port, group_id, model, device, channel=0, upload=True, overwrite=True, sliding_window=False):
+                 omero_port, group_id, model, device, channel=0, upload=True, overwrite=True, sliding_window=False,
+                 print_output=False):
         """
 
         :param img_id_list: List of omero image ids
@@ -58,6 +59,8 @@ class InferWorker(QObject):
         :type overwrite: bool
         :param sliding_window: Use sliding window for inference (not implemented yet)
         :type sliding_window: bool
+        :param print_output: print output in console/terminal
+        :type print_output: bool
         """
 
         super().__init__()
@@ -77,6 +80,7 @@ class InferWorker(QObject):
         self.device = device
         self.group_id = group_id
         self.net = None
+        self.print = print_output
 
         # Load model json file to get architecture + filters
         with open(model) as f:
@@ -149,17 +153,23 @@ class InferWorker(QObject):
 
             if self.upload and not img_ome.canAnnotate():
                 self.text_output.emit(f'  Skip {parent_projects}: {img_ome.getName()} (no write permission)')
+                if self.print:
+                    print(f'Skip {parent_projects}: {img_ome.getName()} (no write permission)')
                 continue
 
             # Check if z stack
             if img_ome.getSizeZ() > 1:
                 self.text_output.emit(f'  {parent_projects}: {img_ome.getName()} is z-stack -> '
                                       f'use maximum intensity projection')
+                if self.print:
+                    print(f'{parent_projects}: {img_ome.getName()} is z-stack -> use maximum intensity projection')
                 # continue
 
             # Get image from Omero
             if self.channel + 1 > img_ome.getSizeC():
                 self.text_output.emit(f'  Skip {parent_projects}: {img_ome.getName()} (not enough channels found)')
+                if self.print:
+                    print(f'{parent_projects}: {img_ome.getName()} (not enough channels found)')
                 continue
 
             # Check if results exist and should not be overwritten
@@ -181,6 +191,8 @@ class InferWorker(QObject):
                         except:
                             self.text_output.emit(
                                 '  Something went wrong during the deletion of already available ROIs')
+                            if self.print:
+                                print('Something went wrong during the deletion of already available ROIs')
 
                     # Delete attachments from label tool and analysis
                     to_delete = []
@@ -203,6 +215,8 @@ class InferWorker(QObject):
             if already_processed and not self.overwrite:
                 self.text_output.emit(f'  Skip {parent_projects}: {img_ome.getName()} (already processed and '
                                       f'overwriting not enabled)')
+                if self.print:
+                    print(f'Skip {parent_projects}: {img_ome.getName()} (already processed and overwriting not enabled)')
                 continue
 
             if not self.upload:
@@ -328,6 +342,9 @@ class InferWorker(QObject):
                                 self.text_output.emit(
                                     f'  Problems with deleting annotations (probably from another user), redundant'
                                     f' results possible. Please check on OMERO.web.')
+                                if self.print:
+                                    print('Problems with deleting annotations (probably from another user), redundant '
+                                          'results possible. Please check on OMERO.web.')
                     map_ann = MapAnnotationWrapper(self.conn)
                     map_ann.setNs(
                         metadata.NSCLIENTMAPANNOTATION)  # Use 'client' namespace to allow editing in Insight & web
@@ -417,6 +434,8 @@ class InferWorker(QObject):
         except RuntimeError:
             prediction = (np.zeros_like(img, dtype=np.uint16)[pads[0]:, pads[1]:], 0, [])
             self.text_output.emit('RuntimeError during inference (maybe not enough ram/vram?)')
+            if self.print:
+                print('RuntimeError during inference (maybe not enough ram/vram?)')
         else:
             prediction_batch = torch.sigmoid(prediction_batch)
             prediction_batch = prediction_batch[:, :, pads[0]:, pads[1]:].cpu().numpy()
