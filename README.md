@@ -111,6 +111,9 @@ Training, evaluation, inference, data imports and data exports can be stopped by
 ### Help
 Press F1 to open a short help.
 
+## Scripts for Using BeadNet without Graphical User Interface
+The scripts *train_script.py* and *infer_script.py* allow BeadNet training and inference without the graphical user interface.
+
 ## OMERO
 - OMERO clients overview: [https://docs.openmicroscopy.org/omero/5.6.1/users/clients-overview.html](https://docs.openmicroscopy.org/omero/5.6.1/users/clients-overview.html)
 - Importing data with OMERO.insight: [https://downloads.openmicroscopy.org/help/pdfs/importing-data-5.pdf](https://downloads.openmicroscopy.org/help/pdfs/importing-data-5.pdf)
