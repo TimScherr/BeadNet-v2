@@ -105,7 +105,8 @@ class TrainWorker(QObject):
     stop_training = False  # Stop training process
     is_training = False  # State of training process
 
-    def start_training(self, path_data, path_models, label_type, iterations, optimizer, batch_size, device, num_gpus):
+    def start_training(self, path_data, path_models, label_type, iterations, optimizer, batch_size, device, num_gpus,
+                       print_output=False):
         """ Start training process
 
         :param path_data: Path of the training set (contains dirs 'train', and 'val')
@@ -124,6 +125,8 @@ class TrainWorker(QObject):
         :type device: torch device
         :param num_gpus: Number of gpus to use
         :type num_gpus: int
+        :param print_output: print output in console/terminal
+        :type print_output: bool
         :return: None
         """
 
@@ -200,7 +203,8 @@ class TrainWorker(QObject):
 
                     # Train model
                     self.train(net=net, datasets=datasets, configs=train_configs, device=device,
-                               path_models=path_models, train_progress=(1/iterations, i/iterations))
+                               path_models=path_models, train_progress=(1/iterations, i/iterations),
+                               print_output=print_output)
 
                     try_training = False
 
@@ -240,10 +244,14 @@ class TrainWorker(QObject):
                     else:
                         text = "Please, try again with smaller batch size or reduce the crop size (use the export " \
                                "and import functionalities for this)"
+                        if print_output:
+                            print(text)
                         self.text_output_main_gui.emit(text)
                         self.text_output.emit('Stop training due to memory problems')
                         try_training = False
                     self.text_output_main_gui.emit(text)
+                    if print_output:
+                        print(text)
 
         if not self.stop_training:
             self.progress.emit(100)
@@ -259,7 +267,7 @@ class TrainWorker(QObject):
         """
         self.stop_training = True
 
-    def train(self, net, datasets, configs, device, path_models, train_progress):
+    def train(self, net, datasets, configs, device, path_models, train_progress, print_output=False):
         """ Train the model.
 
         :param net: Model/Network to train
@@ -274,6 +282,8 @@ class TrainWorker(QObject):
         :type path_models: pathlib Path object
         :param train_progress: Progress of the training (to update progress bar correctly)
         :type train_progress: tuple
+        :param print_output: print output in console/terminal
+        :type print_output: bool
         :return: None
         """
 
@@ -281,6 +291,11 @@ class TrainWorker(QObject):
         self.text_output.emit('{}'.format(configs['run_name']))
         self.text_output.emit('-' * 10)
         self.text_output.emit('Train/validate on {}/{} images'.format(len(datasets['train']), len(datasets['val'])))
+        if print_output:
+            print('*' * 10)
+            print('{}'.format(configs['run_name']))
+            print('*' * 10)
+            print('Train/validate on {}/{} images'.format(len(datasets['train']), len(datasets['val'])))
 
         # Data loader for training and validation set
         apply_shuffling = {'train': True, 'val': False}
@@ -424,6 +439,8 @@ class TrainWorker(QObject):
                         epochs_wo_improvement += 1
 
                     self.text_output.emit(train_output)
+                    if print_output:
+                        print(train_output)
 
                     scheduler.step(epoch_loss)
 
@@ -432,12 +449,16 @@ class TrainWorker(QObject):
             # Break training if plateau is reached
             if epochs_wo_improvement == break_condition:
                 self.text_output.emit('{} epochs without val loss improvement --> break'.format(epochs_wo_improvement))
+                if print_output:
+                    print(f'{epochs_wo_improvement} epochs without val loss improvement --> break')
                 break
 
         # Total training time
         if not self.stop_training:
             time_elapsed = time.time() - since
             self.text_output.emit('Training completed in {:.0f}min {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
+            if print_output:
+                print('Training completed in {:.0f}min {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
             # Save loss
             stats = np.transpose(np.array([list(range(1, len(train_loss) + 1)), train_loss, val_loss]))
